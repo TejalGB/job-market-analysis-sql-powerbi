@@ -9,7 +9,7 @@ This project analyzes large-scale job posting data (~94,000 records) to identify
 
 ## Tech Stack
 
-* **MySQL** (Data ingestion, cleaning, transformation , Normalization(
+* **MySQL** (Data ingestion, cleaning, transformation , Normalization)
 * **Power BI** (Star schema modeling, DAX, Interactive Visuals)
   
 ---
