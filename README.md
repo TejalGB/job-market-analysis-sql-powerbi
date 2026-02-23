@@ -16,6 +16,7 @@ This project analyzes large-scale job posting data (~94,000 records) to identify
 
 ## Project Workflow
 
+### 1. Data Pipeline
 1. Create schema + raw table (`sql/01_setup.sql`)
 2. Load CSV into MySQL (`sql/02_data_load.sql`)
 3. Clean and transform salary + experience (`sql/03_transform_clean.sql`)
@@ -23,7 +24,7 @@ This project analyzes large-scale job posting data (~94,000 records) to identify
 
 ---
 
-### 3️. Business Intelligence Dashboard (Power BI)
+### 2. Business Intelligence Dashboard (Power BI)
 Designed interactive dashboard with:
 
 #### Page 1 — Market Overview
