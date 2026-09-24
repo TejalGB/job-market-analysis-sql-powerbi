@@ -1,0 +1,19 @@
+﻿# Git Ignore for Data Analytics Project
+
+# Large raw datasets (download separately via Kaggle / data link)
+*.csv
+*.tsv
+*.xlsx
+
+# Power BI auto-recovery and temporary files
+*.tmp
+~$*
+*.pbix.cache
+
+# Python environment & cache
+__pycache__/
+*.py[cod]
+*.class
+.ipynb_checkpoints/
+.venv/
+env/
