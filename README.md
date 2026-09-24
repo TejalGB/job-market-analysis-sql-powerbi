@@ -30,9 +30,7 @@ flowchart LR
 
 The database schema is modeled as a **Star Schema** in Power BI to ensure fast analytical querying, slicer filtering, and relationship integrity:
 
-<p align="center">
-  <img src="Data%20Model.png" width="600" alt="Star Schema Data Model" />
-</p>
+<img src="Data%20Model.png" width="650" alt="Star Schema Data Model"/>
 
 ---
 
