@@ -38,7 +38,7 @@ The database schema is modeled as a **Star Schema** in Power BI to ensure fast a
 
 * **Database & Data Engineering**: **MySQL 8.0**
   * Staging and schema definition
-  * Robust single-pass regex string extraction for salaries (Lacs/PA) and experience (Yrs)
+  * Cleaned and parsed salary (LPA) and experience (Years)
   * Skill unpivoting and canonical standardization (`power bi` / `powerbi` -> `Power BI`)
   * Star schema modeling (`fact_jobs`, `bridge_job_skills`, `dim_skills`)
 * **Business Intelligence & Analytics**: **Microsoft Power BI Desktop**
