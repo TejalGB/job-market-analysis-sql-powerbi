@@ -1,4 +1,4 @@
-# 🇮🇳 Indian Tech Job Market Analytics: Workforce Intelligence & Compensation Benchmarking
+# Indian Tech Job Market Analytics: Workforce Intelligence & Compensation Benchmarking
 
 An end-to-end data analytics and business intelligence solution analyzing **~94,000 tech job postings** from Naukri.com. This project extracts actionable labour market intelligence on compensation bands, skill premiums, experience bottlenecks, and regional hiring concentrations across India.
 
@@ -28,42 +28,11 @@ flowchart LR
 
 ## 🗃️ Dimensional Data Model (Star Schema)
 
-The database schema is structured as a **Star Schema** to ensure fast querying and filtering in Power BI:
+The database schema is modeled as a **Star Schema** in Power BI to ensure fast analytical querying, slicer filtering, and relationship integrity:
 
-```mermaid
-erDiagram
-    FACT_JOBS ||--o{ BRIDGE_JOB_SKILLS : has
-    DIM_SKILLS ||--o{ BRIDGE_JOB_SKILLS : contains
-
-    FACT_JOBS {
-        int job_id PK
-        string title
-        string company
-        string role_category
-        string location_raw
-        string department
-        string experience_tier
-        decimal exp_min_yrs
-        decimal exp_max_yrs
-        decimal exp_mid_yrs
-        decimal star_rating
-        int reviews_count
-        decimal salary_min_lpa
-        decimal salary_max_lpa
-        decimal salary_mid_lpa
-    }
-
-    BRIDGE_JOB_SKILLS {
-        int job_id FK
-        string skill_name FK
-        string skill_category
-    }
-
-    DIM_SKILLS {
-        string skill_name PK
-        string skill_category
-    }
-```
+<p align="center">
+  <img src="Data%20Model.png" width="600" alt="Star Schema Data Model" />
+</p>
 
 ---
 
