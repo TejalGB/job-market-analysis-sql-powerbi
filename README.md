@@ -7,11 +7,11 @@ An end-to-end data analytics and business intelligence solution analyzing **~94,
 ## 🎯 Executive Business Summary
 
 1. **The Core Skill Trinity**: **SQL (64%)** and **Python (58%)** are the baseline prerequisites for data analytics roles, while **Power BI** is demanded in 42% of reporting roles.
-2. **Cloud & Big Data Salary Premium**: Postings requiring Cloud/Big Data technologies (**AWS, Azure, Snowflake, PySpark**) offer a **+28% to +35% salary association** over traditional SQL-only reporting roles.
+2. **Cloud & Big Data Salary Premium**: Postings requiring Cloud/Big Data technologies (**AWS, Azure, Snowflake, PySpark**) show a **+28% to +35% higher average salary** compared to traditional SQL/reporting roles.
 3. **Regional Hiring Density**: **Bengaluru (32%)**, **Hyderabad (14%)**, and **Pune (12%)** account for nearly 60% of all data job openings in India.
 4. **Experience Distribution Bottleneck**: **62% of hiring demand** concentrates on Mid-Level professionals (**3–5 years**), while entry-level positions (<2 years) represent only 14% of postings.
 
-> *Note on Causality: Reported salary premiums reflect observed statistical associations within posted compensation packages on Naukri.com (where Cloud/Big Data skills frequently co-occur in senior and specialized roles), rather than standalone causal salary uplifts.*
+> *Note on Causality: Reported salary differentials reflect observed statistical associations within posted compensation packages on Naukri.com (where Cloud/Big Data skills frequently co-occur in specialized and senior roles), rather than standalone causal salary uplifts.*
 
 ---
 
@@ -30,15 +30,15 @@ flowchart LR
 
 ## 🔍 Data Validation & Pipeline Lineage
 
-The data pipeline enforces strict transformation, deduplication, and parsing rules to ensure metric integrity across all reporting layers:
+The data pipeline reconciles raw scraped postings into domain-specific analytical fact and dimension tables:
 
-| Stage / Table | Record Count | Description & Filtering Criteria |
+| Stage / Table | Record Count | Description & Filtering Logic |
 | :--- | :---: | :--- |
-| **Raw Ingested (`jobs_raw`)** | `94,511` | Total job postings snapshot from Naukri.com (March 2023) |
-| **Disclosed Salary & Exp** | `22,307` | Postings with explicit salary ranges (Lacs/PA) and experience (Yrs) |
-| **Fact Table (`fact_jobs`)** | `22,307` | Cleaned analytical base with parsed min/max/mid salary and experience |
+| **Raw Ingested (`jobs_raw`)** | `94,511` | Total multi-domain IT and tech postings snapshot from Naukri.com (March 2023) |
+| **Data Domain Fact (`fact_jobs`)** | `22,307` | Filtered for Data & Analytics roles (`Data`, `Analyst`, `Analytics`, `BI`, `Scientist`, `Engineer`) |
+| **Salary Disclosed Cohort** | `4,850` | Fact records with explicit numeric LPA salary ranges (used for compensation benchmarking) |
 | **Bridge Table (`bridge_job_skills`)** | `~68,000` | Normalized, unpivoted many-to-many job-to-skill pairs |
-| **Dimension (`dim_skills`)** | `15` | Standardized canonical skills mapped to tech domains |
+| **Dimension (`dim_skills`)** | `15` | Standardized canonical skills mapped across technical domains |
 
 ---
 
@@ -46,7 +46,7 @@ The data pipeline enforces strict transformation, deduplication, and parsing rul
 
 The database schema is modeled as a **Star Schema** in Power BI with a Bridge Table pattern to handle many-to-many job-skill relationships:
 
-<img src="Data%20Model.png" width="650" alt="Star Schema Data Model"/>
+![Star Schema Data Model](Data%20Model.png)
 
 ### Relationship Architecture
 * **`dim_skills` (1) $ightarrow$ `bridge_job_skills` (*)**: Single-direction filter (1:Many) from standardized skill catalog to job-skill pairs.
@@ -57,8 +57,8 @@ The database schema is modeled as a **Star Schema** in Power BI with a Bridge Ta
 ## 🛠️ Tech Stack & Implementation
 
 * **Database & Data Engineering**: **MySQL 8.0**
-  * Staging table definition and batch CSV data ingestion
-  * Cleaned and parsed salary (LPA) and experience (Years)
+  * Staging table definition and portable CSV data ingestion (supports bundled sample and full dataset)
+  * Data cleaning & parsing of salary (LPA) and experience (Years)
   * Skill unpivoting and canonical standardization (`power bi` / `powerbi` -> `Power BI`)
   * Star schema modeling (`fact_jobs`, `bridge_job_skills`, `dim_skills`)
 * **Business Intelligence & Analytics**: **Microsoft Power BI Desktop**
@@ -114,9 +114,11 @@ PERCENTILEX.INC(FILTER('fact_jobs', NOT(ISBLANK('fact_jobs'[salary_mid_lpa]))), 
 
 ## 📊 Dashboard Preview
 
-| Page 1: Market Analysis | Page 2: Salary Insights |
-| :---: | :---: |
-| <img src="Market%20Overview.png" width="400"/> | <img src="Salary%20Insights.png" width="400"/> |
+### Page 1: Market Analysis
+![Market Overview](Market%20Overview.png)
+
+### Page 2: Salary Insights
+![Salary Insights](Salary%20Insights.png)
 
 ---
 
@@ -134,35 +136,48 @@ USE job_market_analysis;
 SELECT 
     b.skill_name,
     COUNT(DISTINCT b.job_id) AS jobs_requiring_skill,
-    (SELECT COUNT(DISTINCT job_id) FROM fact_jobs) AS total_jobs_universe,
+    (SELECT COUNT(DISTINCT job_id) FROM fact_jobs) AS total_data_jobs,
     ROUND(COUNT(DISTINCT b.job_id) * 100.0 / (SELECT COUNT(DISTINCT job_id) FROM fact_jobs), 1) AS penetration_pct
 FROM bridge_job_skills b
 GROUP BY b.skill_name
 ORDER BY penetration_pct DESC;
 
--- 2. Cloud & Big Data Salary Association vs Market Baseline
-WITH market_baseline AS (
-    SELECT AVG(salary_mid_lpa) AS avg_market_lpa FROM fact_jobs WHERE salary_mid_lpa IS NOT NULL
+-- 2. Cloud & Big Data Stack vs SQL-Only Reporting Roles Salary Comparison
+WITH cloud_bigdata_jobs AS (
+    SELECT DISTINCT job_id
+    FROM bridge_job_skills
+    WHERE skill_name IN ('AWS', 'Azure', 'Snowflake', 'PySpark', 'Spark')
 ),
-skill_stats AS (
+sql_only_jobs AS (
+    SELECT DISTINCT job_id
+    FROM bridge_job_skills
+    WHERE skill_name IN ('SQL', 'Excel', 'Power BI')
+      AND job_id NOT IN (SELECT job_id FROM cloud_bigdata_jobs)
+),
+cohort_salaries AS (
     SELECT 
-        b.skill_name,
-        AVG(f.salary_mid_lpa) AS avg_skill_lpa,
+        'Cloud / Big Data Roles' AS cohort_name,
+        AVG(f.salary_mid_lpa) AS avg_salary_lpa,
         COUNT(f.job_id) AS sample_size
-    FROM bridge_job_skills b
-    JOIN fact_jobs f ON b.job_id = f.job_id
+    FROM fact_jobs f
+    JOIN cloud_bigdata_jobs c ON f.job_id = c.job_id
     WHERE f.salary_mid_lpa IS NOT NULL
-    GROUP BY b.skill_name
+
+    UNION ALL
+
+    SELECT 
+        'SQL-Only / Reporting Roles' AS cohort_name,
+        AVG(f.salary_mid_lpa) AS avg_salary_lpa,
+        COUNT(f.job_id) AS sample_size
+    FROM fact_jobs f
+    JOIN sql_only_jobs s ON f.job_id = s.job_id
+    WHERE f.salary_mid_lpa IS NOT NULL
 )
 SELECT 
-    s.skill_name,
-    ROUND(s.avg_skill_lpa, 2) AS avg_skill_lpa,
-    ROUND(m.avg_market_lpa, 2) AS avg_market_lpa,
-    ROUND(((s.avg_skill_lpa - m.avg_market_lpa) / m.avg_market_lpa) * 100, 1) AS salary_premium_pct,
-    s.sample_size
-FROM skill_stats s
-CROSS JOIN market_baseline m
-ORDER BY salary_premium_pct DESC;
+    cohort_name,
+    ROUND(avg_salary_lpa, 2) AS avg_salary_lpa,
+    sample_size
+FROM cohort_salaries;
 
 -- 3. Experience Tier Distribution
 SELECT 
@@ -181,8 +196,9 @@ ORDER BY total_postings DESC;
 ## 📌 Dataset Scope & Limitations
 
 * **Collection Period**: Snapshot dataset scraped from **Naukri.com** in **March 2023** (~94,500 tech job postings across India).
-* **Salary Disclosure Bias**: In the raw dataset, ~76.4% of postings did not disclose numeric compensation (marked as *"Not Disclosed"*). Salary analyses reflect the **22,307 postings** with explicit LPA compensation bands.
-* **Platform Scope**: Data reflects postings on a single dominant job portal (Naukri.com) and captures market hiring intent rather than census-level workforce volume.
+* **Domain Focus**: Out of 94,511 raw tech postings, **22,307 records** belong to Data & Analytics roles (Data Analyst, BI, Data Engineer, Data Scientist).
+* **Salary Disclosure Bias**: Only ~21.7% of data postings disclose numeric compensation ranges. Salary analyses are computed on the **4,850 postings** with explicit LPA compensation bands.
+* **Platform Scope**: Data captures posted employer demand on Naukri.com rather than total economic employment volume.
 
 ---
 
@@ -193,14 +209,14 @@ ORDER BY total_postings DESC;
 * Power BI Desktop
 
 ### 1. Data Ingestion Options
-* **Option A (Quick Sample)**: Use the bundled sample dataset (`data/sample_naukri_1000.csv`) included in this repository.
+* **Option A (Quick Sample)**: Use the bundled sample dataset [`data/sample_naukri_1000.csv`](data/sample_naukri_1000.csv) included in this repository.
 * **Option B (Full ~94k Dataset)**: Download the full Naukri.com March 2023 dataset from [Kaggle](https://www.kaggle.com/) and place it in the project root.
 
 ### 2. Database Ingestion & Star Schema Build
 1. Open **MySQL Workbench**.
 2. Run the SQL scripts in numerical sequence:
    * `sql/01_setup.sql`: Creates `job_market_analysis` database and landing table.
-   * `sql/02_data_load.sql`: Ingests the CSV file (adjust path to full CSV or sample CSV).
+   * `sql/02_data_load.sql`: Ingests the CSV file (defaults to `data/sample_naukri_1000.csv`).
    * `sql/03_transform_clean.sql`: Executes single-pass cleaning & feature extraction.
    * `sql/04_star_schema.sql`: Builds `fact_jobs`, `bridge_job_skills`, and `dim_skills`.
 

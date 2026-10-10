@@ -10,10 +10,10 @@ TRUNCATE TABLE jobs_raw;
 
 -- INSTRUCTIONS:
 -- 1. Ensure MySQL local_infile is enabled: SET GLOBAL local_infile = 1;
--- 2. Option A (Full Dataset): Download full ~94k CSV and set path below
--- 3. Option B (Sample Dataset): Use 'data/sample_naukri_1000.csv' included in repo
-LOAD DATA LOCAL INFILE 'C:/Users/gowin/OneDrive/Desktop/SQL Project/Naukri Jobs Data - Mar 2023.csv'
--- LOAD DATA LOCAL INFILE 'data/sample_naukri_1000.csv'
+-- 2. By default, loads the bundled sample dataset 'data/sample_naukri_1000.csv'.
+-- 3. To load the full ~94k dataset, download it from Kaggle and set the path below.
+LOAD DATA LOCAL INFILE 'data/sample_naukri_1000.csv'
+-- LOAD DATA LOCAL INFILE 'Naukri Jobs Data - Mar 2023.csv'
 INTO TABLE jobs_raw
 FIELDS TERMINATED BY ','
 ENCLOSED BY ''
