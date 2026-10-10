@@ -1,9 +1,10 @@
-﻿# Git Ignore for Data Analytics Project
+# Git Ignore for Data Analytics Project
 
-# Large raw datasets (download separately via Kaggle / data link)
+# Large raw datasets (download separately via Kaggle)
 *.csv
 *.tsv
 *.xlsx
+!data/sample_naukri_1000.csv
 
 # Power BI auto-recovery and temporary files
 *.tmp
