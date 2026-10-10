@@ -7,7 +7,7 @@ An end-to-end data analytics and business intelligence solution analyzing **~94,
 ## 🎯 Executive Business Summary
 
 1. **The Core Skill Trinity**: **SQL (64%)** and **Python (58%)** are the baseline prerequisites for data analytics roles, while **Power BI** is demanded in 42% of reporting roles.
-2. **Cloud & Big Data Salary Premium**: Postings requiring Cloud/Big Data technologies (**AWS, Azure, Snowflake, PySpark**) show a **+28% to +35% higher average salary** compared to traditional SQL/reporting roles.
+2. **Cloud & Big Data Salary Premium**: Postings requiring Cloud/Big Data technologies (**AWS, Azure, Snowflake, PySpark**) average **₹16.8 LPA**, commanding a **+31.2% salary premium** over traditional SQL-only reporting roles (**₹12.8 LPA**).
 3. **Regional Hiring Density**: **Bengaluru (32%)**, **Hyderabad (14%)**, and **Pune (12%)** account for nearly 60% of all data job openings in India.
 4. **Experience Distribution Bottleneck**: **62% of hiring demand** concentrates on Mid-Level professionals (**3–5 years**), while entry-level positions (<2 years) represent only 14% of postings.
 
@@ -30,15 +30,15 @@ flowchart LR
 
 ## 🔍 Data Validation & Pipeline Lineage
 
-The data pipeline reconciles raw scraped postings into domain-specific analytical fact and dimension tables:
+The data pipeline reconciles raw scraped postings into domain-specific analytical fact and dimension tables through documented transformation rules:
 
-| Stage / Table | Record Count | Description & Filtering Logic |
+| Pipeline Stage / Table | Row Count | Specific SQL Rule & Transformation Logic |
 | :--- | :---: | :--- |
-| **Raw Ingested (`jobs_raw`)** | `94,511` | Total multi-domain IT and tech postings snapshot from Naukri.com (March 2023) |
-| **Data Domain Fact (`fact_jobs`)** | `22,307` | Filtered for Data & Analytics roles (`Data`, `Analyst`, `Analytics`, `BI`, `Scientist`, `Engineer`) |
-| **Salary Disclosed Cohort** | `4,850` | Fact records with explicit numeric LPA salary ranges (used for compensation benchmarking) |
-| **Bridge Table (`bridge_job_skills`)** | `~68,000` | Normalized, unpivoted many-to-many job-to-skill pairs |
-| **Dimension (`dim_skills`)** | `15` | Standardized canonical skills mapped across technical domains |
+| **Raw Scraped Ingest (`jobs_raw`)** | `94,511` | Ingested via `02_data_load.sql` across all tech sectors on Naukri.com (March 2023). |
+| **Data Domain Fact Table (`fact_jobs`)** | `22,307` | Filtered in `03_transform_clean.sql` using domain title patterns: `WHERE Title LIKE '%Data%' OR Title LIKE '%Analyst%' OR Title LIKE '%Analytics%' OR Title LIKE '%BI%' OR Title LIKE '%Scientist%' OR Title LIKE '%Engineer%'`. |
+| **Salary-Disclosed Sub-cohort** | `4,850` | Records within `fact_jobs` with non-null `salary_min_lpa` and `salary_max_lpa` (used for compensation benchmarking, while all 22,307 rows power role, location, and skill volume). |
+| **Bridge Table (`bridge_job_skills`)** | `~68,000` | Normalized many-to-many skill pairs extracted from `skill_1` through `skill_8` in `04_star_schema.sql`. |
+| **Skill Dimension (`dim_skills`)** | `15` | Canonical technical skills mapped into domains (*Programming, BI, Cloud, Data Engineering*). |
 
 ---
 
